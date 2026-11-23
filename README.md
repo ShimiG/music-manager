@@ -240,6 +240,7 @@ Required environment variables (see `.env.example`):
 | `TOKEN_ENCRYPTION_KEY` | Key (32 bytes: 64 hex chars or base64) for encrypting stored OAuth tokens. Blank: the server generates `.token-key` in the data folder on first run. Changing it means users reconnect their services |
 | `CACHE_MAX_BYTES` | Audio cache size cap in bytes; least recently played tracks are evicted first (default `524288000`, 500 MB) |
 | `AUDIUS_API_KEY` | Optional Audius API key for higher rate limits. Comes from the cloud service when it has one; a value here wins |
+| `AUDIUS_API_BASE` | Audius API address (default `https://api.audius.co/v1`) |
 | `LOCAL_MUSIC_ROOTS` | Extra places music folders may be added from, separated by `:` (`;` on Windows). By default only your home folder and other drives / mounted volumes are allowed |
 | `MUSIC_DATA_DIR` | Use this folder for data instead of the per-user data folder |
 | `MATCH_DURATION_TOLERANCE_SEC` | Largest duration difference, in seconds, between a track and its YouTube match (default `5`) |
