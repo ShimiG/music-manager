@@ -48,3 +48,32 @@ test('control borders pass 3:1', () => {
         assert.ok(contrast(token('border-400-aa'), token(ground)) >= 3, `border-400-aa on ${ground}`);
     }
 });
+
+// Colours live in index.css (tokens) and services.js (one entry per service).
+// Two places cannot use them: @property initial values must be literal
+// colours (App.css), and the placeholder cover is a data: image (artwork.js).
+test('no hex colours outside the token definitions and the service registry', async () => {
+    const { readdirSync, statSync } = await import('node:fs');
+    const { join, relative } = await import('node:path');
+    const root = new URL('..', import.meta.url).pathname;
+    const allowed = new Set(['index.css', 'utils/services.js', 'utils/artwork.js']);
+    const files = [];
+    const walk = (dir) => {
+        for (const name of readdirSync(dir)) {
+            const path = join(dir, name);
+            if (statSync(path).isDirectory()) walk(path);
+            else if (/\.(jsx?|css)$/.test(name) && !/\.test\.js$/.test(name)) files.push(path);
+        }
+    };
+    walk(root);
+    const offenders = [];
+    for (const path of files) {
+        const rel = relative(root, path);
+        if (allowed.has(rel) || rel === 'utils/contrast.js') continue;
+        readFileSync(path, 'utf8').split('\n').forEach((line, i) => {
+            if (/^@property /.test(line)) return;
+            if (/#[0-9a-fA-F]{3,8}(?![0-9a-zA-Z])/.test(line) && !/^\s*(\/\/|\*|\/\*)/.test(line)) offenders.push(`${rel}:${i + 1}`);
+        });
+    }
+    assert.deepEqual(offenders, []);
+});

@@ -80,6 +80,9 @@
 /* Below the anchor: for controls near the top of a scrolling area, where a
    bubble above would be clipped. */
 [data-tip-pos="below"]::after { bottom: auto; top: calc(100% + 8px); transform: translate(-50%, -4px); }
+[data-tip-pos="below-start"]::after { bottom: auto; top: calc(100% + 8px); left: 0; transform: translate(0, -4px); }
+[data-tip-pos="below-start"]:hover::after,
+[data-tip-pos="below-start"]:focus-visible::after { transform: none; }
 
 /* Like "pop" */
 @keyframes mm-pop { 40% { transform: scale(1.35); } }
