@@ -218,7 +218,7 @@ function App() {
                         hidden behind the bar. */}
                     <main ref={contentRef} className="content" style={{ padding: '20px', paddingBottom: currentTrack ? 'calc(var(--player-height, 96px) + 20px)' : '20px' }}>
                         {view !== 'settings' && <ConnectServices />}
-                        <div style={{ display: view === 'search' || view === 'history' ? 'grid' : 'none', gridTemplateColumns: '2fr 1fr', gap: '20px', width: '100%', boxSizing: 'border-box' }}>
+                        <div className="view-grid" hidden={!(view === 'search' || view === 'history')}>
                             <div>
                                 {opened.has('search') && <div hidden={view !== 'search'}><SearchView /></div>}
                                 {opened.has('history') && <div hidden={view !== 'history'}><HistoryView active={view === 'history'} /></div>}

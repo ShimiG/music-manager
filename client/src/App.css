@@ -15,7 +15,60 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
   border-right: 1px solid var(--border-200);
+}
+.sidebar.has-player { padding-bottom: 100px; }
+.sidebar-title { margin: 0 0 14px; }
+.sidebar-spacer { flex: 1; }
+.sidebar-item,
+.sidebar-logout {
+  display: block;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: left;
+  cursor: pointer;
+}
+.sidebar-item { width: 100%; }
+.sidebar-item:hover,
+.sidebar-item[aria-current="page"] { background: var(--surface-100); color: var(--text-primary); }
+.sidebar-logout { align-self: flex-start; width: fit-content; color: var(--danger); }
+.sidebar-logout:hover { background: var(--danger-tint); }
+.sidebar-item:focus-visible,
+.sidebar-logout:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+
+/* Search or Recently Played beside the Up Next card. */
+.view-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; width: 100%; box-sizing: border-box; }
+.view-grid[hidden] { display: none; }
+
+/* Narrow windows (a phone, a half-screen window): the sidebar becomes a
+   wrapping bar above the content and every view takes one column. */
+@media (max-width: 760px) {
+  .app-container { flex-direction: column; }
+  .sidebar {
+    width: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 10px;
+    overflow: visible;
+    border-right: none;
+    border-bottom: 1px solid var(--border-200);
+  }
+  .sidebar.has-player { padding-bottom: 8px; }
+  .sidebar-title, .sidebar-spacer { display: none; }
+  .sidebar-item { width: auto; padding: 8px 10px; font-size: 14px; }
+  .sidebar-logout { align-self: center; padding: 8px 10px; font-size: 14px; }
+  .content { min-height: 0; }
+  .view-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 .content {
