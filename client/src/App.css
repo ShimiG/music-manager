@@ -81,211 +81,6 @@
   min-width: 0;       
 }
 
-.shuffle-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px;
-  border-radius: 50%;
-  transition: background-color 0.3s ease, transform 0.2s, color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary); 
-}
-
-.shuffle-btn:hover {
-  background-color: var(--overlay-hover); 
-  color: var(--text-primary); 
-}
-
-.shuffle-btn.active {
-  color: var(--theme-accent);
-}
-
-.shuffle-btn.active:hover {
-  color: var(--theme-accent, var(--accent-hover));
-}
-
-.shuffle-btn:active {
-  transform: scale(0.95);
-}
-
-.shuffle-btn svg {
-  width: 20px; 
-  height: 20px;
-  fill: currentColor; 
-}
-
-/* --- VOLUME CONTROLS & ANIMATION --- */
-.volume-container {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  width: 30%; /* Keeps it pinned to the right side of the footer */
-  padding-right: 20px;
-}
-
-.sound-btn {
-  width: 24px;
-  height: 24px;
-  position: relative;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  padding: 0;
-  transition: color 0.2s ease;
-}
-
-.sound-btn:hover {
-  color: var(--text-primary);
-}
-
-/* Base speaker body */
-.sound-icon {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding-left: 2px;
-  z-index: 2;
-}
-
-.sound-icon svg {
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
-}
-
-/* Animated Waves */
-.sound-wave {
-  position: absolute;
-  border: 1.5px solid transparent;
-  border-right: 1.5px solid currentColor;
-  border-radius: 50%;
-  transition: all 200ms;
-  margin: auto;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  pointer-events: none;
-}
-
-.sound-wave_one {
-  width: 50%;
-  height: 50%;
-  transition: all 0.2s cubic-bezier(0.26, -0.01, 0, 1.28);
-}
-
-.sound-wave_two {
-  width: 75%;
-  height: 75%;
-  transition: all 0.2s cubic-bezier(0.26, 0.1, 0, 1.49);
-}
-
-/* Muted State Animations */
-.sound-btn.sound-mute .sound-wave {
-  border-radius: 50%;
-  width: 0%;
-  height: 0%;
-  border-width: 0 1.5px 0 0;
-}
-
-.sound-btn.sound-mute .sound-wave_one,
-.sound-btn.sound-mute .sound-wave_two {
-  transform: translateX(-3px);
-  opacity: 0;
-}
-
-/* Custom Spotify-style Slider */
-.volume-slider {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 90px;
-  height: 4px;
-  background: var(--rail);
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
-}
-
-.volume-slider::-webkit-slider-thumb {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
-  background: var(--text-primary);
-  border-radius: 50%;
-  cursor: pointer;
-  opacity: 0; 
-  transition: opacity 0.2s;
-}
-
-.volume-slider::-moz-range-thumb {
-  appearance: none;
-  width: 12px;
-  height: 12px;
-  background: var(--text-primary);
-  border-radius: 50%;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.2s;
-  border: none;
-}
-
-.volume-container:hover .volume-slider::-webkit-slider-thumb {
-  opacity: 1; /* Shows the thumb dot only when hovering nearby */
-}
-
-.volume-slider:hover::-webkit-slider-thumb {
-  background: var(--accent); /* Turns green when grabbing */
-}
-/* Seek bar (components/PlayerFooter.jsx). The filled part takes the playing
-   track's source colour (issue #28): --seek-color comes from the service
-   registry, --seek-pct is the played fraction. Drawn with a gradient so it
-   looks the same in Chromium (Windows) and WebKit (macOS). */
-.seek-slider {
-  appearance: none;
-  -webkit-appearance: none;
-  flex: 1;
-  height: 4px;
-  border-radius: 2px;
-  outline: none;
-  cursor: pointer;
-  background: linear-gradient(to right, var(--seek-color, var(--accent)) var(--seek-pct, 0%), var(--rail) var(--seek-pct, 0%));
-}
-.seek-slider:disabled { cursor: default; opacity: 0.6; }
-.seek-slider::-webkit-slider-thumb {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--text-primary);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.seek-slider::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  border: none;
-  border-radius: 50%;
-  background: var(--text-primary);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.seek-slider:hover::-webkit-slider-thumb,
-.seek-slider:focus-visible::-webkit-slider-thumb { opacity: 1; }
-.seek-slider:hover::-moz-range-thumb,
-.seek-slider:focus-visible::-moz-range-thumb { opacity: 1; }
-.seek-slider:focus-visible { box-shadow: 0 0 0 2px var(--focus-glow); }
-
 /* Toasts (components/Toaster.jsx) */
 .toaster {
     position: fixed;
@@ -583,28 +378,6 @@
 @media (max-width: 820px) {
   .lyrics-scroll { max-height: 60vh; }
 }
-
-/* The part of the player bar that opens the drawer. */
-.player-track-button {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  min-width: 0;
-  max-width: 100%;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 6px;
-}
-.player-track-button:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 4px; }
-.player-track-button .chevron { color: var(--text-secondary); flex-shrink: 0; transition: transform 0.3s ease; }
-.player-track-button[aria-expanded="true"] .chevron { transform: rotate(180deg); }
-.player-track-text { min-width: 0; }
-.player-track-text > div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Settings -> System: what happened to the last plays. */
 .system-plays { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-100); }
@@ -1084,3 +857,129 @@ button.create-tile:hover { background: var(--accent-tint-strong); }
 .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
 .card-grid.is-small { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 15px; }
 .list-message.is-panel { grid-column: 1 / -1; padding: 20px; }
+
+.player-footer {
+  background-color: var(--theme-surface, var(--surface-100));
+  border-top: 1px solid var(--surface-300);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+}
+
+/* Player bar (components/PlayerFooter.jsx). Its ground is --theme-surface,
+   which follows the cover art and fades over .8s. */
+.player-bar {
+  gap: 16px;
+  padding: 12px 20px;
+  color: var(--text-primary);
+  transition: background-color .8s ease;
+}
+.player-track { display: flex; align-items: center; gap: 8px; width: 30%; min-width: 0; }
+.player-track-button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.player-track-button:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 4px; }
+.player-track-art { width: 56px; height: 56px; flex-shrink: 0; border-radius: 4px; object-fit: cover; background: var(--surface-300); }
+.player-track-text { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.player-track-title { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-track-sub { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-track-service { font-weight: bold; }
+.player-track-artist { color: var(--text-muted); }
+.player-track-button .chevron { display: flex; color: var(--text-secondary); flex-shrink: 0; transition: transform .3s ease, color var(--ease-fast); }
+.player-track-button:hover .chevron { color: var(--text-primary); }
+.player-track-button[aria-expanded="true"] .chevron { transform: rotate(180deg); }
+
+.player-center { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.player-transport { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.transport-btn { width: 40px; height: 40px; }
+.transport-btn.is-on,
+.transport-btn.is-on:hover { color: var(--theme-accent); }
+.transport-btn.is-play { background: var(--text-primary); color: var(--on-accent); }
+.transport-btn.is-play:hover { background: var(--text-strong); color: var(--on-accent); transform: scale(1.05); }
+.transport-btn.is-play:active { transform: scale(.95); }
+.player-loader { width: 16px; height: 16px; border-width: 3px; }
+
+.player-seek { width: 100%; max-width: 640px; display: flex; align-items: center; gap: 10px; }
+.player-time { min-width: 35px; color: var(--text-secondary); font-size: 12px; font-variant-numeric: tabular-nums; }
+.player-time.is-elapsed { text-align: right; }
+
+/* Seek and volume rails: a 16px tall hit area drawing a 4px rail that grows
+   to 6px on hover or focus; the 12px thumb shows then. The fill colour and
+   the played fraction come in as --rail-fill and --rail-pct. Drawn as one
+   gradient so it looks the same in Chromium (Windows) and WebKit (macOS). */
+.rail-slider {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(to right, var(--rail-fill, var(--accent)) var(--rail-pct, 0%), var(--rail) var(--rail-pct, 0%)) center / 100% 4px no-repeat;
+  transition: background-size var(--ease-fast);
+}
+.rail-slider:hover,
+.rail-slider:focus-visible { background-size: 100% 6px; }
+.rail-slider:disabled { cursor: default; opacity: .6; }
+.rail-slider::-webkit-slider-runnable-track { height: 16px; background: transparent; }
+.rail-slider::-moz-range-track { height: 16px; background: transparent; }
+.rail-slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: 2px;
+  border: none;
+  border-radius: 50%;
+  background: var(--thumb);
+  opacity: 0;
+  transition: opacity var(--ease-fast);
+}
+.rail-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: none;
+  border-radius: 50%;
+  background: var(--thumb);
+  opacity: 0;
+  transition: opacity var(--ease-fast);
+}
+.rail-slider:hover::-webkit-slider-thumb,
+.rail-slider:focus-visible::-webkit-slider-thumb { opacity: 1; }
+.rail-slider:hover::-moz-range-thumb,
+.rail-slider:focus-visible::-moz-range-thumb { opacity: 1; }
+.rail-slider:focus-visible { box-shadow: 0 0 0 2px var(--focus-glow); }
+.seek-slider { flex: 1; min-width: 0; }
+.volume-rail { width: 96px; flex-shrink: 0; }
+
+.player-volume { display: flex; align-items: center; justify-content: flex-end; gap: 8px; width: 30%; }
+
+/* Narrow: track, like and transport only. */
+@media (max-width: 760px) {
+  .player-bar { gap: 8px; padding: 10px 12px; }
+  .player-track { width: auto; flex: 1; }
+  .player-track-art { width: 44px; height: 44px; }
+  .player-track-button { gap: 10px; }
+  .player-track-button .chevron { display: none; }
+  .player-center { flex: 0 0 auto; }
+  .player-transport { gap: 2px; }
+  .player-transport .transport-btn:not(.is-play) { width: 36px; height: 36px; }
+  .player-seek, .player-volume { display: none; }
+}
