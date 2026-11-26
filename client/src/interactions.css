@@ -64,13 +64,16 @@
   transition: opacity var(--ease-fast), transform var(--ease-fast);
 }
 [data-tip]:hover::after { opacity: 1; transform: translate(-50%, 0); transition-delay: var(--tooltip-delay); }
-[data-tip]:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
+[data-tip]:focus-visible::after,
+[data-tip]:has(> :focus-visible)::after { opacity: 1; transform: translate(-50%, 0); }
 [data-tip-pos="start"]::after { left: 0; transform: translate(0, 4px); }
 [data-tip-pos="start"]:hover::after,
-[data-tip-pos="start"]:focus-visible::after { transform: none; }
+[data-tip-pos="start"]:focus-visible::after,
+[data-tip-pos="start"]:has(> :focus-visible)::after { transform: none; }
 [data-tip-pos="end"]::after { left: auto; right: 0; transform: translate(0, 4px); }
 [data-tip-pos="end"]:hover::after,
-[data-tip-pos="end"]:focus-visible::after { transform: none; }
+[data-tip-pos="end"]:focus-visible::after,
+[data-tip-pos="end"]:has(> :focus-visible)::after { transform: none; }
 /* Nothing to say: no bubble (an attribute can be present but empty). */
 [data-tip=""]::after { display: none; }
 

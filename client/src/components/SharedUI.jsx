@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
-import { serviceOf } from '../utils/services';
+import React, { useEffect, useState, useSyncExternalStore } from 'react';
+import { DEFAULT_SOURCE, serviceOf } from '../utils/services';
 import AddToPlaylist from './AddToPlaylist';
 import { PLACEHOLDER_ART, listArtOf } from '../utils/artwork';
+import { useMusic } from '../context/hook';
+import { toast } from '../utils/toast';
+import {
+    createFlash, formatTime, likeLabel, likeToast, QUEUED_MS, queueToast, sameTrack, toggleLike
+} from '../utils/ui';
 
 // Rows and cards render the normalised Track / Playlist shapes from the
 // library API. Where older rows (history, custom playlists written before
@@ -12,112 +17,214 @@ const artistOf = (t) => t.artist || t.channelTitle || 'Unknown Artist';
 const PLACEHOLDER_50 = PLACEHOLDER_ART;
 const PLACEHOLDER_150 = PLACEHOLDER_ART;
 
+// What has been liked or unliked during this session, so every like button
+// for the same track (its row, the player bar) shows the same heart. The API
+// does not say which tracks are liked, so a track starts as "not liked"
+// unless the screen knows better (the Liked Songs list).
+const likedNow = new Map(); // "source:id" -> boolean
+const likeListeners = new Set();
+const likeKey = (track) => `${track.source || DEFAULT_SOURCE}:${track.id || track.videoId}`;
+function setLiked(track, value) {
+    likedNow.set(likeKey(track), value);
+    likeListeners.forEach((fn) => fn());
+}
+function subscribeLikes(fn) {
+    likeListeners.add(fn);
+    return () => likeListeners.delete(fn);
+}
+function useLiked(track, initiallyLiked) {
+    const key = likeKey(track);
+    const known = useSyncExternalStore(subscribeLikes, () => likedNow.get(key));
+    return known === undefined ? Boolean(initiallyLiked) : known;
+}
+
+// A state that shows for a moment ("✓ Queued"): the timer is dropped when the
+// component goes away.
+function useFlash(ms) {
+    const [on, setOn] = useState(false);
+    const [flash] = useState(() => createFlash(setOn, ms));
+    useEffect(() => () => flash.cancel(), [flash]);
+    return [on, flash.trigger];
+}
+
 // Inline markers a row can carry: an attribution link for sources whose terms
 // require crediting them (declared in the registry), plus the preview /
 // not-streamable states some sources report.
 const TrackBadges = ({ track }) => {
     if (!track) return null;
-    const service = serviceOf(track.source);
+    const service = serviceOf(track.source || DEFAULT_SOURCE);
     const badges = [];
     // Sources whose terms require crediting them get a link back.
     if (service.attribution) {
         badges.push(
             <a
                 key="attr"
+                className="badge is-link"
                 href={track.permalinkUrl || service.attribution.url}
                 target="_blank"
                 rel="noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                title={`Open on ${service.attribution.text}`}
-                style={{ color: service.color, fontSize: '11px', fontWeight: 'bold', textDecoration: 'none', border: `1px solid ${service.color}`, borderRadius: '4px', padding: '1px 6px' }}
+                aria-label={`Open on ${service.attribution.text}`}
+                style={{ color: service.text }}
             >
                 {service.attribution.text} ↗
             </a>
         );
     }
     if (track.preview) {
-        badges.push(<span key="preview" title="Only a preview snippet is available for this track" style={{ color: '#f0c040', fontSize: '11px', border: '1px solid #f0c040', borderRadius: '4px', padding: '1px 6px' }}>Preview</span>);
+        badges.push(
+            <span key="preview" className="badge is-preview" tabIndex={0} data-tip={`${service.label} plays a 30-second preview of this track.`} data-tip-pos="end">
+                Preview
+            </span>
+        );
     }
     if (track.playable === false) {
-        badges.push(<span key="blocked" title="This track cannot be streamed here" style={{ color: '#888', fontSize: '11px', border: '1px solid #555', borderRadius: '4px', padding: '1px 6px' }}>Not streamable</span>);
+        badges.push(<span key="blocked" className="badge is-blocked">Not streamable</span>);
     }
     if (badges.length === 0) return null;
-    return <span style={{ display: 'inline-flex', gap: '6px', marginLeft: '8px', verticalAlign: 'middle' }}>{badges}</span>;
+    return <span className="track-row-badges">{badges}</span>;
 };
 
-// Heart button: `onLike` likes, `onUnlike` unlikes (used inside the liked
-// playlist). Shows a brief confirmation instead of tracking liked state, which
-// the API does not return per track.
-const LikeButton = ({ track, onLike, onUnlike }) => {
-    const [state, setState] = useState('idle'); // idle | busy | done | error
-    const action = onUnlike || onLike;
-    if (!action) return null;
-    const isUnlike = Boolean(onUnlike);
+// Heart toggle. Likes, or unlikes once liked (the same track in another row
+// or in the player bar follows). `onLike` / `onUnlike` make the calls; without
+// `onUnlike` a liked heart stays put. Pops when it becomes liked.
+export const LikeButton = ({ track, onLike, onUnlike, initiallyLiked = false, className = '' }) => {
+    const liked = useLiked(track, initiallyLiked);
+    const [busy, setBusy] = useState(false);
+    const [pops, setPops] = useState(0); // a new key replays the pop animation
+    if (!onLike && !onUnlike) return null;
+    const label = likeLabel(liked);
 
     const handle = async (e) => {
         e.stopPropagation();
-        if (state === 'busy') return;
-        setState('busy');
+        if (busy) return;
+        setBusy(true);
         try {
-            await action(track);
-            setState('done');
-            setTimeout(() => setState('idle'), 1500);
-        } catch {
-            setState('error');
-            setTimeout(() => setState('idle'), 2000);
+            const now = await toggleLike({ liked, track, onLike, onUnlike });
+            setLiked(track, now);
+            if (now) setPops((n) => n + 1);
+            toast(likeToast(now));
+        } catch (err) {
+            toast(err.message || 'That did not work. Try again.', { kind: 'error' });
+        } finally {
+            setBusy(false);
         }
     };
 
-    const label = isUnlike ? 'Remove from liked' : 'Like';
     return (
         <button
+            type="button"
+            className={`icon-btn like-btn pressable${liked ? ' is-liked' : ''} ${className}`}
             onClick={handle}
-            title={label}
             aria-label={label}
-            disabled={state === 'busy'}
-            style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '18px', color: state === 'error' ? '#ff4d4d' : (isUnlike || state === 'done' ? '#1db954' : '#b3b3b3') }}
+            aria-pressed={liked}
+            data-tip={label}
+            disabled={busy}
         >
-            {state === 'done' ? '✓' : (isUnlike ? '♥' : '♡')}
+            <span key={pops} className={pops ? 'pop' : undefined} aria-hidden="true">{liked ? '♥' : '♡'}</span>
         </button>
     );
 };
 
-//  LIST ROW
-export const TrackRow = ({ track, onPlay, onQueue, onLike, onUnlike, canAddToPlaylist = false, imageSize = 50 }) => {
-    const blocked = track.playable === false;
-    const play = () => { if (!blocked) onPlay(track); };
+// "+ Queue" in a track row: shows "✓ Queued" for a moment after adding.
+const QueueButton = ({ track, onQueue }) => {
+    const [queued, flash] = useFlash(QUEUED_MS);
+    const add = (e) => {
+        e.stopPropagation();
+        onQueue(track);
+        flash();
+        toast(queueToast(track.title));
+    };
     return (
-        <div style={{ display: 'flex', gap: '15px', padding: '10px', borderBottom: '1px solid #333', alignItems: 'center', opacity: blocked ? 0.5 : 1 }}>
-            <img
-                src={listArtOf(track) || PLACEHOLDER_50}
-                loading="lazy"
-                decoding="async"
-                width={imageSize}
-                height={imageSize}
-                style={{ width: imageSize, height: imageSize, objectFit: 'cover', borderRadius: '4px', cursor: blocked ? 'not-allowed' : 'pointer' }}
-                onClick={play}
-                alt="thumbnail"
-                onError={(e) => { e.target.src = PLACEHOLDER_50; }}
-            />
-            <div style={{ flex: 1, cursor: blocked ? 'not-allowed' : 'pointer', overflow: 'hidden' }} onClick={play}>
-                <div style={{ fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {track.title}
-                    <TrackBadges track={track} />
-                </div>
-                <div style={{ fontSize: '12px', color: '#aaa', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {artistOf(track)}
-                </div>
+        <button
+            type="button"
+            className={`queue-btn pressable${queued ? ' is-queued' : ''}`}
+            onClick={add}
+            aria-label={queued ? 'Queued' : 'Add to queue'}
+            data-tip="Add to the end of your queue"
+            data-tip-pos="end"
+        >
+            <span aria-hidden="true">{queued ? '✓' : '+'}</span>
+            <span className="queue-btn-word" aria-hidden="true"> {queued ? 'Queued' : 'Queue'}</span>
+        </button>
+    );
+};
+
+// The cover's overlay: ▶ on hover; on the current track always shown, with
+// equaliser bars in the service's colour while it plays.
+const CoverOverlay = ({ current, playing, colour }) => (
+    <span className={`cover-overlay${current ? ' is-current' : ''}`} aria-hidden="true">
+        {current && playing ? (
+            <span className="vu-bars" style={{ '--vu-colour': colour }}>
+                <span className="vu" /><span className="vu" style={{ animationDelay: '-.3s' }} /><span className="vu" style={{ animationDelay: '-.6s' }} />
+            </span>
+        ) : '▶'}
+    </span>
+);
+
+//  LIST ROW
+// The cover, title and service line are one button that plays the track (or
+// pauses it, if it is the one playing). Actions show on hover or focus.
+export const TrackRow = ({ track, onPlay, onQueue, onLike, onUnlike, likedInitially = false, canAddToPlaylist = false, imageSize = 50 }) => {
+    const { currentTrack, isPlaying, togglePlay } = useMusic();
+    const blocked = track.playable === false;
+    const service = serviceOf(track.source || DEFAULT_SOURCE);
+    const current = sameTrack(track, currentTrack, DEFAULT_SOURCE);
+    const playing = current && isPlaying;
+    const artist = artistOf(track);
+    const play = () => {
+        if (blocked) return;
+        if (current) togglePlay();
+        else onPlay(track);
+    };
+    const tip = blocked ? 'This track is unavailable right now.' : `${track.title} · ${artist}`;
+    const hasActions = !blocked && ((onLike || onUnlike) || canAddToPlaylist || onQueue);
+
+    return (
+        // The slot holds the 2px gap, so VirtualList measures it with the row.
+        <div className="track-row-slot">
+            <div className={`track-row${blocked ? ' is-blocked' : ''}${current ? ' is-current' : ''}`}>
+                <span className="track-row-main" data-tip={tip} data-tip-pos="start">
+                    <button
+                        type="button"
+                        className="track-row-play"
+                        onClick={play}
+                        disabled={blocked}
+                        aria-label={blocked ? `${track.title}: unavailable` : `${playing ? 'Pause' : 'Play'} ${track.title}`}
+                    >
+                        <span className="track-row-cover" style={{ width: imageSize, height: imageSize }}>
+                            <img
+                                src={listArtOf(track) || PLACEHOLDER_50}
+                                loading="lazy"
+                                decoding="async"
+                                width={imageSize}
+                                height={imageSize}
+                                alt=""
+                                onError={(e) => { e.target.src = PLACEHOLDER_50; }}
+                            />
+                            {!blocked && <CoverOverlay current={current} playing={playing} colour={service.text} />}
+                        </span>
+                        <span className="track-row-text">
+                            <span className="track-row-title" style={current ? { color: service.text } : undefined}>{track.title}</span>
+                            <span className="track-row-sub">
+                                <span className="track-row-service" style={{ color: service.text }}>
+                                    <span aria-hidden="true">{service.icon}</span> {service.label}
+                                </span>
+                                <span className="track-row-artist"> · {artist}</span>
+                            </span>
+                        </span>
+                    </button>
+                </span>
+                <TrackBadges track={track} />
+                {hasActions && (
+                    <span className="track-row-actions hover-reveal">
+                        {(onLike || onUnlike) && <LikeButton track={track} onLike={onLike} onUnlike={onUnlike} initiallyLiked={likedInitially} />}
+                        {canAddToPlaylist && <AddToPlaylist track={track} />}
+                        {onQueue && <QueueButton track={track} onQueue={onQueue} />}
+                    </span>
+                )}
+                <span className="track-row-duration">{formatTime(track.durationSec)}</span>
             </div>
-            {(onLike || onUnlike) && !blocked && <LikeButton track={track} onLike={onLike} onUnlike={onUnlike} />}
-            {canAddToPlaylist && !blocked && <AddToPlaylist track={track} />}
-            {onQueue && !blocked && (
-                <button
-                    onClick={() => onQueue(track)}
-                    style={{ padding: '6px 12px', borderRadius: '4px', border: '1px solid #1db954', background: 'transparent', color: '#1db954', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}
-                >
-                    + Queue
-                </button>
-            )}
         </div>
     );
 };
@@ -125,15 +232,15 @@ export const TrackRow = ({ track, onPlay, onQueue, onLike, onUnlike, canAddToPla
 // "Add to queue" on a card's picture. The card gives no other sign that it
 // worked, so the button shows a tick for a moment.
 const QueueAction = ({ track, onQueue }) => {
-    const [done, setDone] = useState(false);
+    const [done, flash] = useFlash(QUEUED_MS);
     const add = (e) => {
         e.stopPropagation(); // not a click on the card, which plays the track
         onQueue(track);
-        setDone(true);
-        setTimeout(() => setDone(false), 1200);
+        flash();
+        toast(queueToast(track.title));
     };
     return (
-        <button type="button" className="card-action" onClick={add} title="Add to queue" aria-label="Add to queue">
+        <button type="button" className="card-action pressable" onClick={add} aria-label="Add to queue" data-tip="Add to the end of your queue" data-tip-pos="end">
             {done ? (
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M4 10.5l4 4 8-9" />

@@ -6,7 +6,7 @@ import { useMusic } from '../context/hook';
 import { useSources } from '../hooks/useSources';
 import { useSearch } from '../hooks/useLibrary';
 import { describeSourceError } from '../utils/services';
-import { likeTrack } from '../utils/library';
+import { likeTrack, unlikeTrack } from '../utils/library';
 
 // Search through the generic /api/search/:source route. The source switch is
 // the shared SourcePicker, limited to sources that can search. No service is
@@ -70,6 +70,7 @@ export default function SearchView() {
 
     const canLike = Boolean(service && service.capabilities && service.capabilities.like && service.connected);
     const onLike = canLike ? (track) => likeTrack(track.source, track.id) : undefined;
+    const onUnlike = canLike ? (track) => unlikeTrack(track.source, track.id) : undefined;
 
     const error = search.error ? describeSourceError(search.error, service) : null;
     const connect = service && service.connectAction;
@@ -121,7 +122,7 @@ export default function SearchView() {
                     items={search.items}
                     rowHeight={78}
                     renderRow={(track) => (
-                        <TrackRow key={`search-${track.source}-${track.id}`} track={track} onPlay={playTrack} onQueue={addToQueue} onLike={onLike} canAddToPlaylist imageSize={60} />
+                        <TrackRow key={`search-${track.source}-${track.id}`} track={track} onPlay={playTrack} onQueue={addToQueue} onLike={onLike} onUnlike={onUnlike} canAddToPlaylist imageSize={60} />
                     )}
                 />
             </div>

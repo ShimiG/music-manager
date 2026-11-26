@@ -67,7 +67,7 @@
   .sidebar-title, .sidebar-spacer { display: none; }
   .sidebar-item { width: auto; padding: 8px 10px; font-size: 14px; }
   .sidebar-logout { align-self: center; padding: 8px 10px; font-size: 14px; }
-  .content { min-height: 0; }
+  .content { height: auto; min-height: 0; }
   .view-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
@@ -753,3 +753,193 @@
   text-align: center;
 }
 .error-panel p { margin-top: 0; }
+
+/* Track row (components/SharedUI.jsx: TrackRow). The slot carries the 2px
+   gap so VirtualList, which measures a row's box, counts it. */
+.track-row-slot { padding-bottom: 2px; }
+.track-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: background-color var(--ease-fast);
+}
+.track-row:hover,
+.track-row:focus-within { background: var(--overlay-row); }
+.track-row.is-blocked { opacity: .5; }
+.track-row-main { flex: 1; min-width: 0; display: flex; }
+.track-row-play {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.track-row-play:disabled { cursor: not-allowed; }
+.track-row-play:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+.track-row-cover { position: relative; flex-shrink: 0; border-radius: 4px; overflow: hidden; background: var(--surface-300); }
+.track-row-cover img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cover-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cover-scrim);
+  color: var(--text-primary);
+  font-size: 18px;
+  opacity: 0;
+  transition: opacity var(--ease-fast);
+}
+.track-row:hover .cover-overlay,
+.track-row-play:focus-visible .cover-overlay,
+.cover-overlay.is-current { opacity: 1; }
+.vu-bars { display: flex; align-items: flex-end; gap: 3px; height: 16px; }
+.vu-bars .vu { display: block; width: 3px; height: 100%; border-radius: 1px; background: var(--vu-colour, var(--accent)); }
+.track-row-text { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.track-row-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color var(--ease-fast);
+}
+.track-row:hover .track-row-title { color: var(--text-primary); }
+.track-row.is-current:hover .track-row-title { filter: brightness(1.15); }
+.track-row-sub { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track-row-service { font-weight: bold; }
+.track-row-artist { color: var(--text-muted); }
+.track-row-badges { display: inline-flex; flex-shrink: 0; gap: 6px; }
+.track-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--ease-fast);
+}
+.track-row:hover .track-row-actions,
+.track-row:focus-within .track-row-actions,
+.track-row-actions:has([aria-expanded="true"]) { opacity: 1; }
+.track-row-duration {
+  flex: 0 0 40px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+@media (max-width: 760px) {
+  .track-row { gap: 8px; }
+  .track-row-play { gap: 10px; }
+  .track-row-badges { display: none; }
+  .track-row-duration { display: none; }
+  .track-row-actions { gap: 0; }
+  /* "+" / "✓" only: the title keeps the room. */
+  .queue-btn { padding: 6px 9px; }
+  .queue-btn-word { display: none; }
+}
+
+/* Badges after a track's title */
+.badge { display: inline-block; padding: 1px 6px; border: 1px solid currentColor; border-radius: 4px; font-size: 11px; line-height: 1.5; text-decoration: none; white-space: nowrap; }
+.badge.is-link { font-weight: bold; }
+.badge.is-link:hover { text-decoration: underline; }
+.badge.is-preview { color: var(--warning); cursor: help; }
+.badge.is-blocked { color: var(--text-faint-aa); border-color: var(--border-400-aa); }
+.badge:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+
+/* Like: a heart in a round button; accent once liked. */
+.like-btn { font-size: 18px; line-height: 1; }
+.like-btn > span { display: inline-block; }
+.like-btn.is-liked,
+.like-btn.is-liked:hover { color: var(--accent); }
+
+/* "+ Queue" and its "✓ Queued" moment */
+.queue-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent);
+  font: inherit;
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.queue-btn:hover { background: var(--accent-tint); }
+.queue-btn.is-queued,
+.queue-btn.is-queued:hover { background: var(--accent); color: var(--on-accent); }
+.queue-btn:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+
+/* Add-to-playlist menu (components/AddToPlaylist.jsx) */
+.playlist-menu-anchor { position: relative; display: inline-block; }
+.playlist-menu-anchor.is-compact { display: block; }
+.playlist-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 50;
+  min-width: 220px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--border-300);
+  border-radius: 8px;
+  background: var(--surface-300);
+  box-shadow: var(--shadow-menu);
+}
+.playlist-menu.hangs-right { right: auto; left: 0; }
+.playlist-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.playlist-menu-item:hover:not(:disabled),
+.playlist-menu-item:focus-visible { background: var(--menu-hover); outline: none; }
+.playlist-menu-item.is-note { color: var(--text-subtle); cursor: default; }
+.playlist-menu-new { display: flex; gap: 6px; margin-top: 4px; padding: 6px 4px 2px; border-top: 1px solid var(--border-300); }
+.playlist-menu-new input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--border-400-aa);
+  border-radius: 4px;
+  background: var(--surface-100);
+  color: var(--text-strong);
+  font: inherit;
+  font-size: 13px;
+}
+.playlist-menu-new button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.playlist-menu-new button:disabled { opacity: .5; cursor: default; }

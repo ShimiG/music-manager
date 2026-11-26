@@ -156,11 +156,13 @@ export default function LibraryView({ active = true }) {
 
     const canLike = Boolean(service && service.capabilities && service.capabilities.like);
     const inLiked = Boolean(selectedPlaylist && selectedPlaylist.kind === 'liked');
-    const onLike = canLike && !inLiked ? (track) => likeTrack(track.source, track.id) : undefined;
-    const onUnlike = canLike && inLiked
+    // Every row can like and unlike (a heart toggle); inside the liked list
+    // the rows start liked, and unliking takes the row away.
+    const onLike = canLike ? (track) => likeTrack(track.source, track.id) : undefined;
+    const onUnlike = canLike
         ? async (track) => {
             await unlikeTrack(track.source, track.id);
-            tracks.removeItem(t => t.id === track.id);
+            if (inLiked) tracks.removeItem(t => t.id === track.id);
         }
         : undefined;
 
@@ -262,9 +264,9 @@ export default function LibraryView({ active = true }) {
                 {!tracks.error && (
                     <VirtualList
                         items={tracks.items}
-                        rowHeight={71}
+                        rowHeight={68}
                         renderRow={(track, index) => (
-                            <TrackRow key={`pl-track-${track.source}-${track.id}-${index}`} track={track} onPlay={playInList} onQueue={addToQueue} onLike={onLike} onUnlike={onUnlike} canAddToPlaylist={selectedPlaylist.source !== 'custom'} />
+                            <TrackRow key={`pl-track-${track.source}-${track.id}-${index}`} track={track} onPlay={playInList} onQueue={addToQueue} onLike={onLike} onUnlike={onUnlike} likedInitially={inLiked} canAddToPlaylist={selectedPlaylist.source !== 'custom'} />
                         )}
                     />
                 )}
