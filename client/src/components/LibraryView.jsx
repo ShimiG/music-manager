@@ -86,7 +86,7 @@ export default function LibraryView({ active = true }) {
         setSaving(true);
         try {
             await createCustomPlaylist(name);
-            toast(`Playlist "${name}" created.`);
+            toast(`Created “${name}”.`);
             setNewName('');
             setCreating(false);
             playlists.reload();

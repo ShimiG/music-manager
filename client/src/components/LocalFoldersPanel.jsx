@@ -60,7 +60,7 @@ export default function LocalFoldersPanel({ onChange }) {
     };
 
     const remove = async (folder) => {
-        if (!window.confirm(`Remove "${folder.path}" from your library? The files themselves are not touched.`)) return;
+        if (!window.confirm(`Remove “${folder.path}” from your library? The files themselves are not touched.`)) return;
         try {
             await apiFetch(`/api/local/folders/${encodeURIComponent(folder.id)}`, { method: 'DELETE' });
             await load();

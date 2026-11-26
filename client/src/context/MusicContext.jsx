@@ -131,7 +131,7 @@ export const MusicProvider = ({ children }) => {
                         if (!track.verifyDuration) track.duration = data.duration;
                     }
                     if (data.preview) {
-                        toast(`Only a 30-second preview of "${track.title}" is available.`, { kind: 'warning' });
+                        toast(`Only a 30-second preview of “${track.title}” is available.`, { kind: 'warning' });
                     }
                 })
                 .catch(err => console.error("Failed to fetch true duration:", err));
@@ -406,7 +406,7 @@ const seek = useCallback((time) => {
             console.error("Native Audio Element Error:", e);
             setIsLoading(false);
             setIsPlaying(false);
-            const title = currentTrack?.title ? `"${currentTrack.title}"` : 'This track';
+            const title = currentTrack?.title ? `“${currentTrack.title}”` : 'This track';
             const canSkip = queueIndex < queue.length - 1;
             const failedLoad = loadSeq.current;
             failuresInARow.current += 1;

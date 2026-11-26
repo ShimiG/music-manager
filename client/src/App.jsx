@@ -31,7 +31,7 @@ function reportConnectResult(fragment) {
     const params = new URLSearchParams(fragment);
     for (const s of CALLBACK_SERVICES) {
         const outcome = params.get(s.callbackParam);
-        if (outcome === 'connected') toast(`${s.label} connected.`);
+        if (outcome === 'connected') toast(`Connected ${s.label}.`);
         else if (outcome === 'error') {
             const reason = params.get('reason');
             console.error(`${s.label} account connection failed.${reason ? ` (${reason})` : ''}`);

@@ -82,7 +82,7 @@ function AccountRow({ source, service, onServices }) {
         setBusy(true);
         try {
             await apiFetch(`/api/user/connections/${encodeURIComponent(source.name)}`, { method: 'DELETE' });
-            toast(`${source.label} disconnected.`);
+            toast(`Disconnected ${source.label}.`);
             changed();
         } catch (err) {
             toast(err.message || `Could not disconnect ${source.label}.`, { kind: 'error' });

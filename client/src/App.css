@@ -983,3 +983,5 @@ button.create-tile:hover { background: var(--accent-tint-strong); }
   .player-transport .transport-btn:not(.is-play) { width: 36px; height: 36px; }
   .player-seek, .player-volume { display: none; }
 }
+.toast:hover { border-color: var(--border-400-aa); }
+.toast:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
