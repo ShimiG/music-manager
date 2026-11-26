@@ -943,3 +943,144 @@
   cursor: pointer;
 }
 .playlist-menu-new button:disabled { opacity: .5; cursor: default; }
+
+/* Cards (components/SharedUI.jsx: TrackCard, PlaylistCard). The title button's
+   click area covers the whole card; the cover's buttons sit above it. */
+.card {
+  position: relative;
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--surface-100);
+  transition: background-color .3s ease;
+}
+.card:hover,
+.card:focus-within { background: var(--surface-300); }
+.card.is-liked {
+  background: var(--surface-liked);
+  border-color: color-mix(in srgb, var(--card-service) 33%, transparent);
+}
+.card.is-liked:hover,
+.card.is-liked:focus-within { background: var(--surface-liked-hover); }
+.card-art { position: relative; margin-bottom: 10px; }
+.card-art > img,
+.card-art-fallback {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 4px;
+  background: var(--surface-300);
+}
+.card-art-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint-aa);
+  font-size: 56px;
+}
+.card-art-fallback.is-liked {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--card-service) 40%, transparent), var(--bg-base));
+  color: var(--text-primary);
+}
+.card-title-btn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.card-title-btn::before { content: ''; position: absolute; inset: 0; border-radius: 8px; }
+.card-title-btn:focus-visible { outline: none; }
+.card:has(.card-title-btn:focus-visible) { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+.card-title { display: block; font-size: 14px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-title.is-playlist { font-size: 16px; }
+.card-sub { margin-top: 5px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-service { font-weight: bold; }
+.card-sub-rest { color: var(--text-muted); }
+/* Buttons on the cover stay clickable above the title's click area. */
+.card .track-card-actions { z-index: 2; }
+
+/* The play disc at the cover's bottom right */
+.play-disc {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 3;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0 0 3px;
+  border: none;
+  border-radius: 50%;
+  background: var(--text-primary);
+  color: var(--on-accent);
+  font-size: 18px;
+  box-shadow: var(--shadow-menu);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.card:hover .play-disc,
+.card:focus-within .play-disc { opacity: 1; transform: translateY(0); }
+.card .play-disc:active { transform: scale(.95); }
+.play-disc:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+
+/* The "Create playlist" tile in the Library */
+.create-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 200px;
+  padding: 16px;
+  box-sizing: border-box;
+  border: 2px dashed var(--accent);
+  border-radius: 8px;
+  background: var(--accent-tint);
+  color: var(--accent);
+  font: inherit;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color var(--ease-fast);
+}
+button.create-tile:hover { background: var(--accent-tint-strong); }
+.create-tile:focus-visible { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+.create-tile .plus { font-size: 40px; font-weight: normal; line-height: 1; }
+.create-tile.is-form { align-items: stretch; cursor: default; }
+.create-tile label { color: var(--accent); }
+.create-tile input {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border-400-aa);
+  border-radius: 4px;
+  background: var(--surface-100);
+  color: var(--text-strong);
+  font: inherit;
+  font-weight: normal;
+}
+.create-tile-actions { display: flex; gap: 8px; }
+.create-tile-actions button { padding: 8px 12px; border-radius: 4px; font: inherit; font-weight: bold; cursor: pointer; }
+.create-tile-actions .is-primary { flex: 1; border: none; background: var(--accent); color: var(--on-accent); }
+.create-tile-actions .is-primary:disabled { opacity: .5; cursor: default; }
+.create-tile-actions .is-quiet { border: 1px solid var(--border-400-aa); background: transparent; color: var(--text-body); font-weight: normal; }
+
+/* Library header and the open playlist's header */
+.library-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.library-head h1 { margin: 0; }
+.playlist-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-200); }
+.playlist-head-title { display: flex; flex-wrap: wrap; align-items: center; gap: 15px; min-width: 0; }
+.playlist-head h2 { margin: 0; }
+.playlist-head .btn-neutral { padding: 8px 15px; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+.card-grid.is-small { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 15px; }
+.list-message.is-panel { grid-column: 1 / -1; padding: 20px; }

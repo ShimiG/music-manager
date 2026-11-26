@@ -255,27 +255,38 @@ const QueueAction = ({ track, onQueue }) => {
     );
 };
 
+// The white play disc on a card's cover: shown on hover or focus, always on
+// touch screens.
+const PlayDisc = ({ label, onClick }) => (
+    <button
+        type="button"
+        className="play-disc hover-reveal pressable"
+        onClick={(e) => { e.stopPropagation(); onClick(); }}
+        aria-label={label}
+        data-tip={label}
+        data-tip-pos="end"
+    >
+        <span aria-hidden="true">▶</span>
+    </button>
+);
+
 // GRID CARD
-// `canAddToPlaylist` and `onQueue` put two small buttons on the picture's top
-// right corner (playlist above queue), shown while the pointer is on the card.
+// The title is the card's button (its click area covers the card); the play
+// disc and the top-right actions sit above it. `canAddToPlaylist` and
+// `onQueue` put two small buttons on the picture's top right corner
+// (playlist above queue), shown while the pointer is on the card.
 export const TrackCard = ({ track, onClick, onQueue, canAddToPlaylist = false }) => {
-    const service = serviceOf(track.source);
+    const service = serviceOf(track.source || DEFAULT_SOURCE);
     const hasActions = canAddToPlaylist || Boolean(onQueue);
+    const artist = artistOf(track);
     return (
-        <div
-            className="track-card"
-            onClick={() => onClick(track)}
-            style={{ background: '#181818', padding: '15px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.3s' }}
-            onMouseEnter={(e) => e.currentTarget.style.background = '#282828'}
-            onMouseLeave={(e) => e.currentTarget.style.background = '#181818'}
-        >
-            <div className="track-card-art">
+        <div className="card track-card">
+            <div className="card-art track-card-art">
                 <img
                     src={listArtOf(track) || PLACEHOLDER_150}
                     loading="lazy"
                     decoding="async"
-                    alt={track.title}
-                    style={{ display: 'block', width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '4px' }}
+                    alt=""
                     onError={(e) => { e.target.src = PLACEHOLDER_150; }}
                 />
                 {hasActions && (
@@ -284,15 +295,14 @@ export const TrackCard = ({ track, onClick, onQueue, canAddToPlaylist = false })
                         {onQueue && <QueueAction track={track} onQueue={onQueue} />}
                     </div>
                 )}
+                {track.playable !== false && <PlayDisc label={`Play ${track.title}`} onClick={() => onClick(track)} />}
             </div>
-            <div style={{ fontWeight: 'bold', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {track.title}
-            </div>
-            <div style={{ color: '#b3b3b3', fontSize: '12px', marginTop: '5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {artistOf(track)}
-                {service.attribution && (
-                    <span style={{ color: '#666' }}> · {service.label}</span>
-                )}
+            <button type="button" className="card-title-btn" onClick={() => onClick(track)} aria-label={`Play ${track.title} by ${artist}`}>
+                <span className="card-title">{track.title}</span>
+            </button>
+            <div className="card-sub">
+                <span className="card-service" style={{ color: service.text }}><span aria-hidden="true">{service.icon}</span> {service.label}</span>
+                <span className="card-sub-rest"> · {artist}</span>
             </div>
         </div>
     );
@@ -300,34 +310,33 @@ export const TrackCard = ({ track, onClick, onQueue, canAddToPlaylist = false })
 
 //  PLAYLIST CARD — renders the normalised Playlist shape only.
 //  { source, id, kind: 'liked' | 'playlist' | 'custom', name, thumbnail, itemCount, readOnly }
-export const PlaylistCard = ({ playlist, onClick }) => {
+//  `onPlay(playlist)`: the play disc (none without it).
+export const PlaylistCard = ({ playlist, onClick, onPlay }) => {
     const service = serviceOf(playlist.source);
     const isLiked = playlist.kind === 'liked';
     const count = playlist.itemCount != null ? `${playlist.itemCount} ${playlist.itemCount === 1 ? 'song' : 'songs'}` : null;
 
-    let subtitle;
-    if (isLiked) subtitle = count ? `${service.label} · ${count}` : service.label;
-    else if (playlist.kind === 'custom') subtitle = count || '0 songs';
-    else subtitle = count ? `${service.label} · ${count}` : service.label;
-
     return (
-        <div
-            onClick={() => onClick(playlist)}
-            style={{ background: isLiked ? '#2a1f2f' : '#282828', padding: '15px', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.3s', border: isLiked ? `1px solid ${service.color}55` : '1px solid transparent' }}
-            onMouseEnter={(e) => e.currentTarget.style.background = isLiked ? '#3a2a40' : '#3e3e3e'}
-            onMouseLeave={(e) => e.currentTarget.style.background = isLiked ? '#2a1f2f' : '#282828'}
-        >
-            {playlist.thumbnail ? (
-                <img src={listArtOf(playlist)} loading="lazy" decoding="async" style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '4px', marginBottom: '10px' }} alt="playlist cover" />
-            ) : (
-                <div aria-hidden="true" style={{ width: '100%', aspectRatio: '1', borderRadius: '4px', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '56px', background: isLiked ? `linear-gradient(135deg, ${service.color}66, #111)` : '#1a1a1a', color: isLiked ? 'white' : '#555' }}>
-                    {isLiked ? '♥' : service.icon}
-                </div>
-            )}
-            <div style={{ fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {isLiked && <span style={{ color: service.color, marginRight: '6px' }}>♥</span>}{playlist.name}
+        <div className={`card playlist-card${isLiked ? ' is-liked' : ''}`} style={{ '--card-service': service.color }}>
+            <div className="card-art">
+                {playlist.thumbnail ? (
+                    <img src={listArtOf(playlist)} loading="lazy" decoding="async" alt="" />
+                ) : (
+                    <div aria-hidden="true" className={`card-art-fallback${isLiked ? ' is-liked' : ''}`}>
+                        {isLiked ? '♥' : service.icon}
+                    </div>
+                )}
+                {onPlay && <PlayDisc label={`Play ${playlist.name}`} onClick={() => onPlay(playlist)} />}
             </div>
-            <div style={{ fontSize: '12px', color: '#aaa' }}>{subtitle}</div>
+            <button type="button" className="card-title-btn" onClick={() => onClick(playlist)} aria-label={`Open ${playlist.name}`}>
+                <span className="card-title is-playlist">
+                    {isLiked && <span aria-hidden="true" style={{ color: service.text, marginRight: '6px' }}>♥</span>}{playlist.name}
+                </span>
+            </button>
+            <div className="card-sub">
+                <span className="card-service" style={{ color: service.text }}><span aria-hidden="true">{service.icon}</span> {service.label}</span>
+                {count && <span className="card-sub-rest"> · {count}</span>}
+            </div>
         </div>
     );
 };
