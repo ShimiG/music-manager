@@ -74,6 +74,10 @@
 /* Nothing to say: no bubble (an attribute can be present but empty). */
 [data-tip=""]::after { display: none; }
 
+/* Below the anchor: for controls near the top of a scrolling area, where a
+   bubble above would be clipped. */
+[data-tip-pos="below"]::after { bottom: auto; top: calc(100% + 8px); transform: translate(-50%, -4px); }
+
 /* Like "pop" */
 @keyframes mm-pop { 40% { transform: scale(1.35); } }
 .pop { animation: mm-pop .32s ease; }
